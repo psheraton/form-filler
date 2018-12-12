@@ -396,6 +396,7 @@ class DataGenerator {
   }
 
   getRandomDataForField(field, element) {
+    console.log(element, field);
     switch (field.type) {
       case 'username':
         this.previousUsername = this.generateScrambledWord(5, 10, true);
@@ -508,8 +509,14 @@ class DataGenerator {
 
   fillInputTagElement(theElement) {
     const element = theElement;
+    const sanName = this.getSanitizedElementName(element);
 
     if (this.shouldIgnoreField(element)) {
+      return;
+    }
+
+    if (this.isAnyMatch(sanName, this.options.confirmFields)) {
+      element.value = this.previousValue;
       return;
     }
 
@@ -518,6 +525,17 @@ class DataGenerator {
 
     if (elementType !== undefined) {
       elementType = elementType.toLowerCase();
+    }
+    let field = this.getFieldFromElement(sanName);
+    if (field) {
+      let val = this.generateValueByType(element);
+      if (val) {
+        element.value = this.previousValue = val;
+        return;
+      }
+      if (field.type) {
+        elementType = field.type.toLowerCase();
+      }
     }
 
     if (elementType === 'checkbox') {
@@ -543,12 +561,7 @@ class DataGenerator {
       const randomWeek = (`0${this.generateNumber(1, 52)}`).slice(-2);
       element.value = `${randomYear}-W${randomWeek}`;
     } else if (elementType === 'email') {
-      if (this.isAnyMatch(element.name.toLowerCase(), this.options.confirmFields)) {
-        element.value = this.previousValue;
-      } else {
-        this.previousValue = this.generateEmail(this.options.emailSettings);
-        element.value = this.previousValue;
-      }
+      element.value = this.generateEmail(this.options.emailSettings);
     } else if (elementType === 'number' || elementType === 'range') {
       let min = 1;
       let max = 100;
@@ -560,7 +573,7 @@ class DataGenerator {
         max = parseInt(element.max, 10);
       }
 
-      const numberOptions = this.getFieldFromElement(this.getSanitizedElementName(element), ['number']);
+      const numberOptions = this.getFieldFromElement(sanName, ['number']);
       if (numberOptions) {
         min = numberOptions.min;
         max = numberOptions.max;
@@ -568,20 +581,14 @@ class DataGenerator {
 
       element.value = this.generateNumber(min, max);
     } else if (elementType === 'password') {
-      if (this.isAnyMatch(element.name.toLowerCase(), this.options.confirmFields)) {
-        element.value = this.previousValue;
-      } else {
-        this.previousValue = this.generatePassword();
-        element.value = this.previousValue;
-      }
+      element.value = this.generatePassword();
     } else if (elementType === 'radio') {
       this.selectRandomRadio(element.name);
     } else if (elementType === 'tel') {
-      const elementName = this.getSanitizedElementName(element);
-      const telephoneOptions = this.getFieldFromElement(elementName);
+      const telephoneOptions = field;
 
       if (telephoneOptions) {
-        element.value = this.generateValueByType(element, elementName, telephoneOptions);
+        element.value = this.generateValueByType(element, sanName, telephoneOptions);
       } else {
         element.value = this.generatePhoneNumber();
       }
@@ -593,13 +600,9 @@ class DataGenerator {
     } else if (elementType === 'search') {
       element.value = this.generateWords(1);
     } else if (elementType === 'text' || elementType === '' || elementType === undefined) {
-      if (this.isAnyMatch(element.name.toLowerCase(), this.options.confirmFields)) {
-        element.value = this.previousValue;
-      } else {
-        this.previousValue = this.generateValueByType(element);
-        element.value = this.previousValue;
-      }
+      element.value = this.generateValueByType(element);
     }
+    this.previousValue = element.value;
 
     if (elementType !== 'checkbox' && elementType !== 'radio' && this.options.triggerClickEvents) {
       if (window.Event && window.dispatchEvent) {
