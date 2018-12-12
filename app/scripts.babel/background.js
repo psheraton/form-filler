@@ -1,13 +1,11 @@
 import { GetFormFillerOptions, SaveFormFillerOptions, CreateContextMenus, GetMessage } from './form-filler/helpers';
 
-const analyticsTrackingCode = 'UA-XXXXXXX-X'; // UA-9183424-4 / UA-XXXXXXX-X
 
 function handleMessage(request, sender, sendResponse) {
   if (request === 'getOptions') {
     GetFormFillerOptions().then((result) => {
       sendResponse({
-        options: result,
-        analyticsTrackingCode,
+        options: result
       });
     });
     return true;

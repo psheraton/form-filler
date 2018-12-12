@@ -4,9 +4,9 @@ import jQuery from 'jquery';
 import DataGenerator from './data-generator';
 
 class FormFiller {
-  constructor(options, trackingCode) {
+  constructor(options, document) {
+    this.context = document;
     this.options = options;
-    this.trackingCode = trackingCode;
     this.dataGenerator = new DataGenerator(options);
   }
 
@@ -16,7 +16,8 @@ class FormFiller {
 
   fillAllInputs(context) {
 
-    context = context || document;
+    console.log('context', context);
+    context = context || this.context;
 
     jQuery('input:enabled:not([readonly])', context).each((index, element) => {
       this.fillInput(element);
@@ -58,7 +59,7 @@ class FormFiller {
   }
 
   fillThisInput() {
-    const element = this.clickedElement || document.activeElement;
+    const element = this.clickedElement || (this.context && this.context.activeElement) || document.activeElement;
 
     this.fillInput(element);
 

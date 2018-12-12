@@ -8,6 +8,6 @@ document.addEventListener('mousedown', (event) => {
 
 chrome.runtime.sendMessage('getOptions', (response) => {
   if (!window.formFiller) {
-    window.formFiller = new FormFiller(response.options, response.analyticsTrackingCode);
+    window.formFiller = new FormFiller(response.options, window.document);
   }
 });
